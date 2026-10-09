@@ -687,9 +687,9 @@
       ['Level 06', 'Rooftop terrace & bar', '2 outdoor-rated APs on poles cover the lounge seating, daybeds and bar; weatherproof enclosures, 5 GHz only.'],
     ];
     const hitGeo = new THREE.BoxGeometry(W + 3, PITCH, D + 3);
-    const hits = LEVELS.map((g, i) => { const m = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({ visible: false })); m.name = 'hit_level_' + i; m.position.y = PITCH / 2; m.userData.level = i; g.add(m); return m; });
+    const hits = LEVELS.map((g, i) => { const m = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, depthTest: false })); m.name = 'hit_level_' + i; m.position.y = PITCH / 2; m.userData.level = i; g.add(m); return m; });
     LEVEL_INFO.push(['Pool deck', 'Pool, spa & cabanas', '3 pole-mounted outdoor APs ring the deck so guests hold a signal from the loungers to the far cabanas. Fiber back to the MDF runs under the pavers.']);
-    { const m = new THREE.Mesh(new THREE.BoxGeometry(24, 4, 18), new THREE.MeshBasicMaterial({ visible: false })); m.name = 'hit_pool_deck'; m.position.set(PX, 2, PZ); m.userData.level = 6; model.add(m); hits.push(m); }
+    { const m = new THREE.Mesh(new THREE.BoxGeometry(24, 4, 18), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, depthTest: false })); m.name = 'hit_pool_deck'; m.position.set(PX, 2, PZ); m.userData.level = 6; model.add(m); hits.push(m); }
     const POOL_EDGE = edgeMat.clone(); const poolBox = new THREE.Box3(new THREE.Vector3(PX - 12.5, -0.5, PZ - 9.5), new THREE.Vector3(PX + 12.5, 5, PZ + 9.5)); const v = new THREE.Vector3();
     edges.forEach((e) => { if (levelOf(e) < 0 && poolBox.containsPoint(e.getWorldPosition(v))) e.material = POOL_EDGE; });
     const POOL_WATER = []; model.traverse((o) => { if (o.isMesh && /pool_water|spa_water/.test(o.name)) POOL_WATER.push(o); });
@@ -709,7 +709,7 @@
         ray.setFromCamera(ptr, cam);
         const hit = ray.intersectObjects(hits, false)[0];
         const li = hit ? hit.object.userData.level : -1;
-        if (li !== hover.i) { hover.i = li; if (tip) { if (li >= 0) { const [eb, b, p] = LEVEL_INFO[li]; tip.innerHTML = '<div class="tip_eb">' + eb + '</div><b class="tip_title">' + b + '</b><p class="tip_body">' + p + '</p>'; tip.classList.add('is-on'); } else tip.classList.remove('is-on'); } }
+        if (li !== hover.i) { hover.i = li; if (tip) { if (li >= 0) { const [eb, b, p] = LEVEL_INFO[li]; tip.innerHTML = '<div class="subheading on-inverse">' + eb + '</div><div class="text_label on-inverse">' + b + '</div><p class="text_sm on-inverse">' + p + '</p>'; tip.classList.add('is-on'); } else tip.classList.remove('is-on'); } }
         if (li >= 0 && tip) { const host = tip.offsetParent || tip.parentElement; const hr = host.getBoundingClientRect(); tip.style.left = (ev.clientX - hr.left) + 'px'; tip.style.top = (ev.clientY - hr.top) + 'px'; }
         canvas.style.cursor = li >= 0 ? 'pointer' : 'default';
       });
