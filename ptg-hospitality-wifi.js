@@ -709,7 +709,7 @@
         ray.setFromCamera(ptr, cam);
         const hit = ray.intersectObjects(hits, false)[0];
         const li = hit ? hit.object.userData.level : -1;
-        if (li !== hover.i) { hover.i = li; if (tip) { if (li >= 0) { const [eb, b, p] = LEVEL_INFO[li]; tip.innerHTML = '<div class="subheading on-inverse">' + eb + '</div><div class="text_label on-inverse">' + b + '</div><p class="text_sm on-inverse">' + p + '</p>'; tip.classList.add('is-on'); } else tip.classList.remove('is-on'); } }
+        if (li !== hover.i) { hover.i = li; if (tip) { if (li >= 0) { const [eb, b, p] = LEVEL_INFO[li]; tip.innerHTML = '<div class="subheading on-inverse">' + eb + '</div><div class="text_label on-inverse">' + b + '</div><p class="text_sm on-inverse">' + p + '</p>'; tip.classList.add('is-on'); tip.style.opacity = '1'; } else { tip.classList.remove('is-on'); tip.style.opacity = '0'; } } }
         if (li >= 0 && tip) { const host = tip.offsetParent || tip.parentElement; const hr = host.getBoundingClientRect(); tip.style.left = (ev.clientX - hr.left) + 'px'; tip.style.top = (ev.clientY - hr.top) + 'px'; }
         canvas.style.cursor = li >= 0 ? 'pointer' : 'default';
       });
