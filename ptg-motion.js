@@ -1,14 +1,13 @@
-/* PTG motion layer v1.1.0 — site-wide GSAP effects keyed off Styleguide classes + data hooks.
+/* PTG motion layer v1.3.0 — site-wide GSAP effects keyed off Styleguide classes + data hooks.
    Depends on gsap + ScrollTrigger (site head). Lenis is driven by the footer boot (PTG.lenis).
    Hooks:
-     [data-lines]   masked line reveal on scroll (auto on .heading_h0/.heading_h1 outside [data-hero] and [data-reveal])
+     [data-lines]   masked line reveal on scroll (opt-in only)
      [data-words]   scroll-scrubbed word colour sweep (dim → gold → white); [data-accent] children stay gold
      [data-rise]    y+fade reveal
      [data-count]   count-up number (data-dec = decimals)
      [data-settle]  image scale 1.08 → 1 on load
      [data-parallax] slow vertical drift inside an overflow:hidden parent
      .button, .text-link, .card_title  stacked-text hover (runtime-wrapped into .ptg-swap)
-     internal <a>   page curtain out → navigate → curtain in on the next page
    Reduced motion: everything static, nothing hidden. Canvas: Designer runs no scripts, so markup is untouched. */
 (function () {
   if (window.__ptgMotion) return; window.__ptgMotion = 1;
@@ -24,20 +23,20 @@
     h.dataset.ptgSplit = 1;
     var text = h.textContent.trim(); if (!text) return null;
     var words = text.split(/\s+/);
-    h.innerHTML = words.map(function (w) { return '<span class="ptg-w">' + w + '&nbsp;</span>'; }).join('');
+    h.innerHTML = words.map(function (w) { return '<span class="ptg-w">' + w + '</span>'; }).join(' ');
     var ws = [].slice.call(h.querySelectorAll('.ptg-w')), lines = [], top = null, cur;
     ws.forEach(function (w) { if (w.offsetTop !== top) { top = w.offsetTop; cur = []; lines.push(cur); } cur.push(w); });
     h.innerHTML = '';
     lines.forEach(function (l) {
       var o = document.createElement('span'); o.className = 'ptg-ln';
-      var i = document.createElement('span'); i.textContent = l.map(function (w) { return w.textContent; }).join('').trim();
+      var i = document.createElement('span'); i.textContent = l.map(function (w) { return w.textContent; }).join(' ');
       o.appendChild(i); h.appendChild(o);
     });
     return h.querySelectorAll('.ptg-ln > span');
   }
 
   function initLines(g, ST) {
-    var sel = '[data-lines], .heading_h0, .heading_h1';
+    var sel = '[data-lines]'; // opt-in only (auto heading reveal removed 2026-10-14)
     [].slice.call(document.querySelectorAll(sel)).forEach(function (h) {
       if (h.closest('[data-hero], [data-reveal], .w-nav, .ptg-header, footer')) return;
       var inner = splitLines(h); if (!inner || RM) return;
@@ -122,37 +121,6 @@
     });
   }
 
-  /* ---------- 5. page curtain ---------- */
-  function initCurtain(g) {
-    if (RM) return;
-    var c = document.createElement('div'); c.className = 'ptg-curtain'; c.setAttribute('aria-hidden', 'true');
-    var hair = document.createElement('div'); hair.className = 'ptg-curtain_line'; c.appendChild(hair);
-    document.body.appendChild(c);
-    // arriving from a curtain-out: reveal
-    if (sessionStorage.getItem('ptgCurtain') === '1') {
-      sessionStorage.removeItem('ptgCurtain');
-      document.documentElement.classList.remove('ptg-wipe');
-      g.set(c, { scaleY: 1, transformOrigin: 'top' });
-      g.to(c, { scaleY: 0, duration: 0.6, ease: 'power3.inOut', delay: 0.05 });
-    }
-    var busy = false;
-    document.addEventListener('click', function (e) {
-      var a = e.target.closest && e.target.closest('a[href]'); if (!a || busy) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-      if (a.target && a.target !== '_self') return;
-      var href = a.getAttribute('href') || '';
-      if (!href || href.charAt(0) === '#' || /^(mailto:|tel:|javascript:)/i.test(href) || a.hasAttribute('download')) return;
-      var url; try { url = new URL(href, location.href); } catch (err) { return; }
-      if (url.origin !== location.origin) return;
-      if (url.pathname === location.pathname && url.hash) return;
-      e.preventDefault(); busy = true;
-      sessionStorage.setItem('ptgCurtain', '1');
-      g.set(c, { transformOrigin: 'bottom' });
-      g.to(c, { scaleY: 1, duration: 0.55, ease: 'power3.inOut', onComplete: function () { location.href = url.href; } });
-      setTimeout(function () { busy = false; }, 4000);
-    }, true);
-  }
-
   ready(function () {
     var g = window.gsap, ST = window.ScrollTrigger;
     if (!g || !ST) return;
@@ -161,7 +129,6 @@
     initLines(g, ST);
     initWords(g);
     initScroll(g);
-    initCurtain(g);
     setTimeout(function () { ST.refresh(); }, 400);
     window.addEventListener('resize', function () { clearTimeout(window.__ptgRz); window.__ptgRz = setTimeout(function () { ST.refresh(); }, 200); });
   });
